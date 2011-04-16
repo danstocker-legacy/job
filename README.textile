@@ -1,0 +1,17 @@
+h1. jOB
+
+jOb is a simple benchmarking framework for Javascript.
+
+h2. Requirements
+
+* jQuery
+
+h2. Usage
+
+h3. benchmark(description)
+
+Registers a new benchmark. Each benchmark may run multiple tests.
+
+h3. test(description, handler, options)
+
+Registers a benchmark tests. Option @handler@ specifies the function to run and measure its execution time.

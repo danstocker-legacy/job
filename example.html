@@ -1,0 +1,79 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+	<title>jOB Sample Benchmark</title>
+	<link rel="stylesheet" href="job.css" type="text/css" media="screen" />
+	<script src="http://code.jquery.com/jquery-1.5.2.min.js"></script>
+	<script src="job.js"></script>
+	<script>
+	/*global jQuery, jOB */
+	(function ($, jOB) {
+		//////////////////////////////
+		// LOOPS
+
+		jOB.benchmark("Comparing for..in and for..i++ for dense and sparse arrays (both w/ 1000 elements). Dense arrays have few 'holes' in them, sparse arrays have lots.");
+		
+		// creating sparse and dense array
+		var length = 1000,
+				sparse = [],
+				dense = [],
+				i;
+		for (i = 0; i < length; i++) {
+			dense.push(i);
+			sparse[4 * i] = i;
+		}
+		
+		jOB.test("for..i++ / dense array", function () {
+			var result = [];
+			for (i = 0; i < dense.length; i++) {
+				result.push(dense[i]);
+			}
+			return result;
+		}, {lengthonly: true});
+
+		jOB.test("for..i++ / sparse array", function () {
+			var result = [];
+			for (i = 0; i < sparse.length; i++) {
+				if (!sparse[i]) {
+					continue;
+				} else {
+					result.push(sparse[i]);
+				}
+			}
+			return result;
+		}, {lengthonly: true});
+
+		jOB.test("for..in / dense array", function () {
+			var result = [];
+			for (i in dense) {
+				if (dense.hasOwnProperty(i)) {
+					result.push(dense[i]);
+				}
+			}
+			return result;
+		}, {lengthonly: true});
+
+		jOB.test("for..in / sparse array", function () {
+			var result = [];
+			for (i in sparse) {
+				if (sparse.hasOwnProperty(i)) {
+					result.push(sparse[i]);
+				}
+			}
+			return result;
+		}, {lengthonly: true});
+		
+		//////////////////////////////
+		// MODIFICATION
+
+		
+	}(jQuery, jOB));
+	</script>
+</head>
+<body>
+	<h1>jOB Sample Benchmark</h1>
+	<div id="job-toolbar"></div>
+	<table id="job-benchmarks"></table>
+	<table id="job-results"></table>
+</body>
+</html>
