@@ -11,6 +11,10 @@ var jOB = function ($) {
 
 	// processes a row
 	function process(row, handler) {
+		if (typeof row === 'string') {
+			return handler('string', row);
+		}
+		
 		var result = [],
 				field;
 		for (field in row) {
