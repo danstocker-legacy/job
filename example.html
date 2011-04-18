@@ -8,20 +8,24 @@
 	<script>
 	/*global jQuery, jOB */
 	(function ($, jOB) {
-		//////////////////////////////
-		// LOOPS
-
-		jOB.benchmark("Comparing for..in and for..i++ for dense and sparse arrays (both w/ 1000 elements). Dense arrays have few 'holes' in them, sparse arrays have lots.");
-		
 		// creating sparse and dense array
 		var length = 1000,
 				sparse = [],
 				dense = [],
-				i;
+				strings = [],
+				random = [],
+				i, pos;
 		for (i = 0; i < length; i++) {
-			dense.push(i);
 			sparse[4 * i] = i;
+			dense.push(i);
+			strings.push(i.toString());
+			random.splice(Math.random() * random.length, 0, i.toString());			
 		}
+		
+		//////////////////////////////
+		// LOOPS
+
+		jOB.benchmark("Comparing for..in and for..i++ for dense and sparse arrays (both w/ 1000 elements). Dense arrays have few 'holes' in them, sparse arrays have lots.");
 		
 		jOB.test("for..i++ / dense array", function () {
 			var result = [];
@@ -64,9 +68,141 @@
 		}, {lengthonly: true});
 		
 		//////////////////////////////
-		// MODIFICATION
+		// ARRAY BUILDING
 
+		jOB.benchmark("Adding " + length + " elements to array using...");
 		
+		jOB.test("Array.push()", function () {
+			var result = [],
+					i;
+			for (i = 0; i < length; i++) {
+				result.push({num: i});
+			}
+			return result;
+		}, {lengthonly: true});
+		
+		jOB.test("Array.splice() at end", function () {
+			var result = [],
+					i;
+			for (i = 0; i < length; i++) {
+				result.splice(result.length, 0, {num: i});
+			}
+			return result;
+		}, {lengthonly: true});
+		
+		jOB.test("Array.unshift()", function () {
+			var result = [],
+					i;
+			for (i = 0; i < length; i++) {
+				result.unshift({num: i});
+			}
+			return result;
+		}, {lengthonly: true});
+
+		jOB.test("Array.splice() at start", function () {
+			var result = [],
+					i;
+			for (i = 0; i < length; i++) {
+				result.splice(0, 0, {num: i});
+			}
+			return result;
+		}, {lengthonly: true});
+
+		jOB.test("Array.splice() at middle", function () {
+			var result = [],
+					i;
+			for (i = 0; i < length; i++) {
+				result.splice(Math.floor(result.length / 2), 0, {num: i});
+			}
+			return result;
+		}, {lengthonly: true});
+		
+		//////////////////////////////
+		// ARRAY DECONSTRUCTION
+
+		jOB.benchmark("Removing " + length + " elements from array using...");
+		
+		jOB.test("Array.pop()", function () {
+			var result = dense.concat([]),
+					i;
+			for (i = 0; i < length; i++) {
+				result.pop();
+			}
+			return result;
+		}, {lengthonly: true});
+		
+		jOB.test("Array.splice() at end", function () {
+			var result = dense.concat([]),
+					i;
+			for (i = 0; i < length; i++) {
+				result.splice(result.length - 1, 1);
+			}
+			return result;
+		}, {lengthonly: true});
+		
+		jOB.test("Array.shift()", function () {
+			var result = dense.concat([]),
+					i;
+			for (i = 0; i < length; i++) {
+				result.shift();
+			}
+			return result;
+		}, {lengthonly: true});
+		
+		jOB.test("Array.splice() at start", function () {
+			var result = dense.concat([]),
+					i;
+			for (i = 0; i < length; i++) {
+				result.splice(0, 1);
+			}
+			return result;
+		}, {lengthonly: true});
+		
+		jOB.test("Array.splice() at middle", function () {
+			var result = dense.concat([]),
+					i;
+			for (i = 0; i < length; i++) {
+				result.splice(Math.floor(result.length / 2), 1);
+			}
+			return result;
+		}, {lengthonly: true});
+
+		//////////////////////////////
+		// ARRAY DECONSTRUCTION
+
+		jOB.benchmark("Sorting array of " + length + " elements");
+		
+		jOB.test("Randomized array of strings, native comparer", function () {
+			var result = random.concat([]),
+					i;
+			result.sort();
+			return result;
+		}, {lengthonly: true});
+		
+		jOB.test("Already sorted array of strings, native comparer", function () {
+			var result = strings.concat([]),
+					i;
+			result.sort();
+			return result;
+		}, {lengthonly: true});
+		
+		jOB.test("Randomized array W/ callback", function () {
+			var result = random.concat([]),
+					i;
+			result.sort(function (a, b) {
+				return a > b ? 1 : a < b ? -1 : 0;
+			});
+			return result;
+		}, {lengthonly: true});
+		
+		jOB.test("Already sorted array W/ callback", function () {
+			var result = strings.concat([]),
+					i;
+			result.sort(function (a, b) {
+				return a > b ? 1 : a < b ? -1 : 0;
+			});
+			return result;
+		}, {lengthonly: true});
 	}(jQuery, jOB));
 	</script>
 </head>
