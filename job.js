@@ -76,13 +76,31 @@ var jOB = function ($) {
 		},
 		
 		// runs a test and measures time
-		// -message to be displayed for test
-		// -handler: test to run 'count' times
-		//	expected to return a json table
-		test: function (message, handler, options) {
-			var benchmark = benchmarks[benchmarks.length - 1];
+		// - message to be displayed for test
+		// - handlers: test to run 'count' times
+		//	 expected to return a json table
+		// - options
+		test: function (message /*, handlers..., options */) {
+			var benchmark = benchmarks[benchmarks.length - 1],
+					candidates = [],
+					options,
+					i, arg;
 			if (benchmark) {
-				benchmark.tests.push({message: message, handler: handler, options: options});
+				// collecting 
+				for (i = 1; i < arguments.length; i++) {
+					arg = arguments[i];
+					switch (typeof arg) {
+					case 'function':
+						candidates.push(arg);
+						break;
+					case 'object':
+						options = arg;
+						break;
+					default:
+						throw "Invalid argument passed to jOB.test()";
+					}
+				}
+				benchmark.tests.push({message: message, handlers: candidates, options: options});
 			}
 		},
 
@@ -118,44 +136,46 @@ var jOB = function ($) {
 
 		// builds a table containing 		
 		start: function () {
-			$('#job-benchmarks').append([
-				'<colgroup>',
-				'<col class="job-desc">',
-				'<col class="job-button">',
-				'<col class="job-result">',
-				'<col class="job-arrow">',
-				'</colgroup>',
-				(function () {
-					var result = [],
-							j, benchmark,
-							i, test;
-					for (j = 0; j < benchmarks.length; j++) {
-						benchmark = benchmarks[j];
-						// benchmark header
+			$('#job-benchmarks').append(function () {
+				var result = [],
+						j, benchmark,
+						i, test;
+				for (j = 0; j < benchmarks.length; j++) {
+					benchmark = benchmarks[j];
+					// benchmark header
+					result.push([
+						'<h3>', benchmark.desc, '</h3>',
+						'<table>',
+						'<tbody>'						
+					].join(''));
+					// tests
+					for (i = 0; i < benchmark.tests.length; i++) {
+						test = benchmark.tests[i];
 						result.push([
-							'<tbody>',
-							'<tr>',
-							'<th colspan="3">', benchmark.desc, '</th>',
+							'<tr id="job-', j, '-', i, '">',
+							'<td class="job-desc">', test.message, '</td>',
+							'<td class="job-button"><input class="job-run" type="button" value="&#8594;" /></td>',
+							// adding result cells for each candidate
+							(function () {
+								var result = [],
+										handlers = test.handlers,
+										k;
+								for (k = 0; k < handlers.length; k++) {
+									result.push('<td id="job-' + [j, i, k].join('-') + '" class="job-result"></td>');
+								}
+								return result.join('');
+							}()),
+							'<td class="job-arrow"></td>',
 							'</tr>'
 						].join(''));
-						// tests
-						for (i = 0; i < benchmark.tests.length; i++) {
-							test = benchmark.tests[i];
-							result.push([
-								'<tr id="job-', j, '-', i, '">',
-								'<td>', test.message, '</td>',
-								'<td><input class="job-run" type="button" value="&#8594;" /></td>',
-								'<td class="job-result"></td>',
-								'<td class="job-arrow"></td>',
-								'</tr>'
-							].join(''));
-						}
-						result.push('</tbody>');
 					}
-					return result.join('');
-				}()),
-				'</tbody>'
-			].join(''));
+					result.push([
+						'</tbody>',
+						'</table>'
+					].join(''));
+				}
+				return result.join('');
+			}());
 		}
 	};
 	
@@ -164,16 +184,17 @@ var jOB = function ($) {
 		var $this = $(this),
 				$tr = $this.closest('tr'),
 				$tbody = $this.closest('tbody'),
+				$target,
 				id = $tr.attr('id').split('-'),
 				test = benchmarks[id[1]].tests[id[2]],
-				i,
+				i, j, k = 0,
 				start = new Date(), end,
 				unit = 'ms',
 				result;
 	
 		// running test function
 		for (i = 0; i < self.count; i++) {
-			result = test.handler();
+			result = test.handlers[0]();
 			if (self.timeout < new Date() - start) {
 				break;
 			}
@@ -183,30 +204,27 @@ var jOB = function ($) {
 		// removing all arrows
 		$('td.job-arrow')
 			.empty();
-				
+		$target = $('#' + id.concat(['0']).join('-'));
+			
 		// handling timeout
 		if (i < self.count) {
 			// adding timeout value (% or estimation)
-			$tr
-				.find('.job-result')
-					.text(self.estimate ?
-						String(Math.floor(self.timeout * self.count / i)) + unit :
-						"timeout (" + Math.floor(100 * i / self.count) + "%)")
-				.end();
+			$target.text(self.estimate ?
+				String(Math.floor(self.timeout * self.count / i)) + unit :
+				"timeout (" + Math.floor(100 * i / self.count) + "%)");
 
 			// hiding result table
 			$('#job-results')
 				.hide();
 			return;
 		} else {
-			// adding duration and arrow
-			$tr
-				.find('.job-result')
-					.text(String(end - start) + unit)
-				.end()
-				.find('.job-arrow')
-					.html('<span>&#8594;</span>')
-				.end();
+			// adding duration
+			$target.text(String(end - start) + unit);
+			
+			// displaying arrow
+			$tr.find('.job-arrow')
+				.html('<span>&#8594;</span>')
+			.end();
 				
 			// aligning result table to benchmark header
 			$('#job-results')
