@@ -179,22 +179,18 @@ var jOB = function ($) {
 		}
 	};
 	
-	// events
-	$('input.job-run').live('click', function () {
-		var $this = $(this),
-				$tr = $this.closest('tr'),
-				$tbody = $this.closest('tbody'),
-				$target,
-				id = $tr.attr('id').split('-'),
-				test = benchmarks[id[1]].tests[id[2]],
-				i, j, k = 0,
+	function run(b, t, c) {
+		var result,
+				test = benchmarks[b].tests[t],
 				start = new Date(), end,
-				unit = 'ms',
-				result;
-	
+				i,
+				$target,
+				$tr = $(['#job', b, t].join('-')),
+				unit = 'ms';
+		
 		// running test function
 		for (i = 0; i < self.count; i++) {
-			result = test.handlers[0]();
+			result = test.handlers[c]();
 			if (self.timeout < new Date() - start) {
 				break;
 			}
@@ -204,8 +200,8 @@ var jOB = function ($) {
 		// removing all arrows
 		$('td.job-arrow')
 			.empty();
-		$target = $('#' + id.concat(['0']).join('-'));
-			
+		$target = $(['#job', b, t, c].join('-'));
+
 		// handling timeout
 		if (i < self.count) {
 			// adding timeout value (% or estimation)
@@ -226,13 +222,26 @@ var jOB = function ($) {
 				.html('<span>&#8594;</span>')
 			.end();
 				
-			// aligning result table to benchmark header
-			$('#job-results')
-				.css('top', $tbody.offset().top);		
-
 			// building result table
 			self.build(test.options && test.options.lengthonly ? [{ length: result.length }] : result);
 		}
+	}
+	
+	// events
+	$('input.job-run').live('click', function () {
+		var $this = $(this),
+				$tr = $this.closest('tr'),
+				$tbody = $this.closest('tbody'),
+				id = $tr.attr('id').split('-'),
+				test = benchmarks[id[1]].tests[id[2]],
+				i;
+		for (i = 0; i < test.handlers.length; i++) {
+			run(id[1], id[2], i);
+		}
+
+		// aligning result table to benchmark header
+		$('#job-results')
+			.css('top', $tbody.offset().top);		
 	});
 	
 	return self;
