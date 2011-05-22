@@ -7,8 +7,18 @@
 
 var jOB = function ($) {
 	var benchmarks = [],	// all benchmarks
-			self;
+			self,
 
+	// converts argument list to actual array
+	argumentsToArray = function (args) {
+		var result = [],
+				i;
+		for (i = 0; i < args.length; i++) {
+			result.push(args[i]);
+		}
+		return result;
+	};
+			
 	// processes a row
 	function process(row, handler) {
 		if (typeof row === 'string') {
@@ -71,8 +81,10 @@ var jOB = function ($) {
 		estimate: true,		// whether to project timed out test durations
 		
 		// registers a benchmark
-		benchmark: function (desc) {
-			benchmarks.push({desc: desc, tests: []});
+		// - desc: describes the benchmark
+		// - labels: labels for each candidate
+		benchmark: function (desc /*, labels */) {
+			benchmarks.push({desc: desc, labels: argumentsToArray(arguments).slice(1), tests: []});
 		},
 		
 		// runs a test and measures time
@@ -82,24 +94,16 @@ var jOB = function ($) {
 		// - options
 		test: function (message /*, handlers..., options */) {
 			var benchmark = benchmarks[benchmarks.length - 1],
-					candidates = [],
+					candidates,
 					options,
-					i, arg;
+					args = argumentsToArray(arguments);
+			if (typeof args[args.length - 1] === 'object') {
+				options = args[args.length - 1];
+				candidates = args.slice(1, args.length - 1);
+			} else {
+				candidates = args.slice(1);
+			}
 			if (benchmark) {
-				// collecting 
-				for (i = 1; i < arguments.length; i++) {
-					arg = arguments[i];
-					switch (typeof arg) {
-					case 'function':
-						candidates.push(arg);
-						break;
-					case 'object':
-						options = arg;
-						break;
-					default:
-						throw "Invalid argument passed to jOB.test()";
-					}
-				}
 				benchmark.tests.push({message: message, handlers: candidates, options: options});
 			}
 		},
@@ -142,13 +146,37 @@ var jOB = function ($) {
 						i, test;
 				for (j = 0; j < benchmarks.length; j++) {
 					benchmark = benchmarks[j];
-					// benchmark header
+					
+					// adding benchmark title
 					result.push([
 						'<h3>', benchmark.desc, '</h3>',
-						'<table>',
-						'<tbody>'						
+						'<table>'
 					].join(''));
-					// tests
+					
+					// adding benchmark header
+					if (benchmark.labels.length) {
+						result.push([
+							'<thead>',
+							'<tr>',
+							'<td></td>',
+							'<td></td>'
+						].join(''));
+						// adding labels
+						for (i = 0; i < benchmark.labels.length; i++) {
+							result.push([
+								'<td>',
+								benchmark.labels[i],
+								'</td>'
+							].join(''));
+						}
+						result.push([
+							'</tr>',
+							'</thead>'
+						].join(''));
+					}
+					
+					// adding tests
+					result.push('<tbody>');
 					for (i = 0; i < benchmark.tests.length; i++) {
 						test = benchmark.tests[i];
 						result.push([
