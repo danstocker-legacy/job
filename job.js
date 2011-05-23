@@ -7,17 +7,17 @@
 
 var jOB = function ($) {
 	var benchmarks = [],	// all benchmarks
-			self,
+			self;
 
 	// converts argument list to actual array
-	argumentsToArray = function (args) {
+	function argumentsToArray(args) {
 		var result = [],
 				i;
 		for (i = 0; i < args.length; i++) {
 			result.push(args[i]);
 		}
 		return result;
-	};
+	}
 			
 	// processes a row
 	function process(row, handler) {
