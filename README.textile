@@ -1,17 +1,30 @@
 h1. jOB
 
-jOb is a simple benchmarking framework for Javascript.
+jOb is a simple benchmarking framework for JavaScript.
 
 h2. Requirements
 
 * jQuery
 
+h2. Initialization
+
+The benchmark page is constructed according to the information specified through the @benchmark@ and @test@ methods of the @jOB@ object, when the document ready event fires.
+
 h2. Usage
 
-h3. benchmark(description)
+h3. benchmark(description, labels...)
 
-Registers a new benchmark. Each benchmark may run multiple tests.
+Registers a new benchmark. Each benchmark may run multiple tests on multiple candidates. Candidates are identified by their labels.
 
-h3. test(description, handler, options)
+Example:
+@jOB.benchmark("awesome speed improvement", "Old code", "My algorithm");@
 
-Registers a benchmark tests. Option @handler@ specifies the function to run and measure its execution time.
+h3. test(description, handler..., options)
+
+Registers a benchmark test. The @handler@ argument specifies the function to be run for each candidate.
+
+Handlers don't take arguments and are expected optionally to return an array of objects. The return value or its length will be displayed on the benchmark page upon manual execution. Which one, is controlled by the @lengthonly@ property of the @options@ argument object.
+
+Example:
+@jOB.test("DOM population", function () {/*...*/}, function () {/*...*/}, {lengthonly: true});@
+
