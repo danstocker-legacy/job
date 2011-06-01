@@ -12,42 +12,34 @@
 		var length = 1000,
 				sparse = [],
 				dense = [],
+				numbers = [],
+				numbers_rnd = [],
 				strings = [],
-				random = [],
+				strings_rnd = [],
 				i, pos;
 		for (i = 0; i < length; i++) {
 			sparse[4 * i] = i;
 			dense.push(i);
+			numbers.push(i);
+			numbers_rnd.splice(Math.random() * strings_rnd.length, 0, i);	
 			strings.push(i.toString());
-			random.splice(Math.random() * random.length, 0, i.toString());			
+			strings_rnd.splice(Math.random() * strings_rnd.length, 0, i.toString());			
 		}
 		
 		//////////////////////////////
 		// LOOPS
 
-		jOB.benchmark("Comparing for..in and for..i++ for dense and sparse arrays (both w/ 1000 elements). Dense arrays have few 'holes' in them, sparse arrays have lots.");
+		jOB.benchmark("Comparing for..in and for..i++ for dense and sparse arrays (both w/ 1000 elements). Dense arrays have few 'holes' in them, sparse arrays have lots.",
+			"for..i++",
+			"for..in");
 		
-		jOB.test("for..i++ / dense array", function () {
+		jOB.test("dense array", function () {
 			var result = [];
 			for (i = 0; i < dense.length; i++) {
 				result.push(dense[i]);
 			}
 			return result;
-		}, {lengthonly: true});
-
-		jOB.test("for..i++ / sparse array", function () {
-			var result = [];
-			for (i = 0; i < sparse.length; i++) {
-				if (!sparse[i]) {
-					continue;
-				} else {
-					result.push(sparse[i]);
-				}
-			}
-			return result;
-		}, {lengthonly: true});
-
-		jOB.test("for..in / dense array", function () {
+		}, function () {
 			var result = [];
 			for (i in dense) {
 				if (dense.hasOwnProperty(i)) {
@@ -57,7 +49,18 @@
 			return result;
 		}, {lengthonly: true});
 
-		jOB.test("for..in / sparse array", function () {
+
+		jOB.test("sparse array", function () {
+			var result = [];
+			for (i = 0; i < sparse.length; i++) {
+				if (!sparse[i]) {
+					continue;
+				} else {
+					result.push(sparse[i]);
+				}
+			}
+			return result;
+		}, function () {
 			var result = [];
 			for (i in sparse) {
 				if (sparse.hasOwnProperty(i)) {
@@ -67,7 +70,9 @@
 			return result;
 		}, {lengthonly: true});
 		
-		jOB.benchmark("Comparing if's and switches inside and outside loops");
+		jOB.benchmark("Comparing if's and switches inside and outside loops",
+				"inside of loop",
+				"outside of loop");
 		
 		// dummy function
 		function doStuff(count) {
@@ -78,7 +83,7 @@
 			}
 		}
 		
-		jOB.test("if... inside of loop", function () {
+		jOB.test("if...", function () {
 			var i,
 					count = 100;
 			for (i = 0; i < count; i++) {
@@ -88,9 +93,7 @@
 					doStuff();
 				}
 			}
-		});
-		
-		jOB.test("if... outside of loop", function () {
+		}, function () {
 			var i,
 					count = 100;
 			if (1) {
@@ -104,7 +107,7 @@
 			}
 		});
 		
-		jOB.test("switch inside of loop", function () {
+		jOB.test("switch", function () {
 			var a = 1,
 					i,
 					count = 100;
@@ -118,9 +121,7 @@
 					break;
 				}
 			}
-		});
-		
-		jOB.test("switch outside of loop", function () {
+		}, function () {
 			var a = 1,
 					i,
 					count = 100;
@@ -139,47 +140,45 @@
 		});
 		
 		//////////////////////////////
-		// ARRAY BUILDING
+		// ARRAY MANUIPULATION
 
-		jOB.benchmark("Adding " + length + " elements to array using...");
+		jOB.benchmark("Array manipulation",
+			"push / pop",
+			"shift / unshift",
+			"splice @ end",
+			"splice @ start",
+			"splice @ middle"
+			);
 		
-		jOB.test("Array.push()", function () {
+		jOB.test("Adding " + length + " elements", function () {
 			var result = [],
 					i;
 			for (i = 0; i < length; i++) {
 				result.push({num: i});
 			}
 			return result;
-		}, {lengthonly: true});
-		
-		jOB.test("Array.splice() at end", function () {
-			var result = [],
-					i;
-			for (i = 0; i < length; i++) {
-				result.splice(result.length, 0, {num: i});
-			}
-			return result;
-		}, {lengthonly: true});
-		
-		jOB.test("Array.unshift()", function () {
+		}, function () {
 			var result = [],
 					i;
 			for (i = 0; i < length; i++) {
 				result.unshift({num: i});
 			}
 			return result;
-		}, {lengthonly: true});
-
-		jOB.test("Array.splice() at start", function () {
+		}, function () {
+			var result = [],
+					i;
+			for (i = 0; i < length; i++) {
+				result.splice(result.length, 0, {num: i});
+			}
+			return result;
+		}, function () {
 			var result = [],
 					i;
 			for (i = 0; i < length; i++) {
 				result.splice(0, 0, {num: i});
 			}
 			return result;
-		}, {lengthonly: true});
-
-		jOB.test("Array.splice() at middle", function () {
+		}, function () {
 			var result = [],
 					i;
 			for (i = 0; i < length; i++) {
@@ -188,48 +187,35 @@
 			return result;
 		}, {lengthonly: true});
 		
-		//////////////////////////////
-		// ARRAY DECONSTRUCTION
-
-		jOB.benchmark("Removing " + length + " elements from array using...");
-		
-		jOB.test("Array.pop()", function () {
+		jOB.test("Removing " + length + " elements", function () {
 			var result = dense.concat([]),
 					i;
 			for (i = 0; i < length; i++) {
 				result.pop();
 			}
 			return result;
-		}, {lengthonly: true});
-		
-		jOB.test("Array.splice() at end", function () {
-			var result = dense.concat([]),
-					i;
-			for (i = 0; i < length; i++) {
-				result.splice(result.length - 1, 1);
-			}
-			return result;
-		}, {lengthonly: true});
-		
-		jOB.test("Array.shift()", function () {
+		}, function () {
 			var result = dense.concat([]),
 					i;
 			for (i = 0; i < length; i++) {
 				result.shift();
 			}
 			return result;
-		}, {lengthonly: true});
-		
-		jOB.test("Array.splice() at start", function () {
+		}, function () {
+			var result = dense.concat([]),
+					i;
+			for (i = 0; i < length; i++) {
+				result.splice(result.length - 1, 1);
+			}
+			return result;
+		}, function () {
 			var result = dense.concat([]),
 					i;
 			for (i = 0; i < length; i++) {
 				result.splice(0, 1);
 			}
 			return result;
-		}, {lengthonly: true});
-		
-		jOB.test("Array.splice() at middle", function () {
+		}, function () {
 			var result = dense.concat([]),
 					i;
 			for (i = 0; i < length; i++) {
@@ -241,38 +227,58 @@
 		//////////////////////////////
 		// ARRAY DECONSTRUCTION
 
-		jOB.benchmark("Sorting array of " + length + " elements");
+		jOB.benchmark("Sorting array of " + length + " elements",
+			"native comparer",
+			"custom comparer",
+			"native w/ pre-process");
 		
 		jOB.test("Randomized array of strings, native comparer", function () {
-			var result = random.concat([]),
+			var result = strings_rnd.concat([]),
 					i;
 			result.sort();
 			return result;
+		}, function () {
+			var result = strings_rnd.concat([]),
+					i;
+			result.sort(function (a, b) {
+				return a > b ? 1 : a < b ? -1 : 0;
+			});
+			return result;
+		}, function () {
+			var tmp = numbers_rnd.concat([]),
+					result = [],
+					i;
+			// conversion
+			for (i = 0; i < tmp.length; i++) {
+				result.push(tmp[i].toString());
+			}
+			result.sort();
+			return result;
 		}, {lengthonly: true});
+		
 		
 		jOB.test("Already sorted array of strings, native comparer", function () {
 			var result = strings.concat([]),
 					i;
 			result.sort();
 			return result;
-		}, {lengthonly: true});
-		
-		jOB.test("Randomized array W/ callback", function () {
-			var result = random.concat([]),
-					i;
-			result.sort(function (a, b) {
-				return a > b ? 1 : a < b ? -1 : 0;
-			});
-			return result;
-		}, {lengthonly: true});
-		
-		jOB.test("Already sorted array W/ callback", function () {
+		}, function () {
 			var result = strings.concat([]),
 					i;
 			result.sort(function (a, b) {
 				return a > b ? 1 : a < b ? -1 : 0;
 			});
 			return result;
+		}, function () {
+			var tmp = numbers.concat([]),
+					result = [],
+					i;
+			// conversion
+			for (i = 0; i < tmp.length; i++) {
+				result.push(tmp[i].toString());
+			}
+			result.sort();
+			return result;			
 		}, {lengthonly: true});
 	}(jQuery, jOB));
 	</script>
