@@ -142,6 +142,21 @@
 		//////////////////////////////
 		// ARRAY MANUIPULATION
 
+		jOB.benchmark("Array transfer",
+			".concat([])",
+			"iteration");
+		
+		jOB.test("Shallow copy", function () {
+			return [{length: dense.concat([]).length}];
+		}, function () {
+			var result = [],
+					i;
+			for (i = 0; i < length; i++) {
+				result.push(dense[i]);
+			}
+			return [{length: result.length}];
+		});
+
 		jOB.benchmark("Array manipulation",
 			"push / pop",
 			"shift / unshift",
