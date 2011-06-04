@@ -142,12 +142,15 @@
 		//////////////////////////////
 		// ARRAY MANUIPULATION
 
-		jOB.benchmark("Array transfer",
+		jOB.benchmark("Shallow copy",
 			".concat([])",
+			".slice([])",
 			"iteration");
 		
-		jOB.test("Shallow copy", function () {
+		jOB.test("", function () {
 			return [{length: dense.concat([]).length}];
+		}, function () {
+			return [{length: dense.slice(0).length}];
 		}, function () {
 			var result = [],
 					i;
@@ -156,7 +159,7 @@
 			}
 			return [{length: result.length}];
 		});
-
+		
 		jOB.benchmark("Array manipulation",
 			"push / pop",
 			"shift / unshift",
@@ -247,7 +250,7 @@
 			"custom comparer",
 			"native w/ pre-process");
 		
-		jOB.test("Randomized array of strings, native comparer", function () {
+		jOB.test("Randomized array", function () {
 			var result = strings_rnd.concat([]),
 					i;
 			result.sort();
@@ -272,7 +275,7 @@
 		}, {lengthonly: true});
 		
 		
-		jOB.test("Already sorted array of strings, native comparer", function () {
+		jOB.test("Already sorted array", function () {
 			var result = strings.concat([]),
 					i;
 			result.sort();
@@ -293,7 +296,7 @@
 				result.push(tmp[i].toString());
 			}
 			result.sort();
-			return result;			
+			return result;
 		}, {lengthonly: true});
 	}(jQuery, jOB));
 	</script>
