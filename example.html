@@ -150,7 +150,7 @@
 		jOB.test("", function () {
 			return [{length: dense.concat([]).length}];
 		}, function () {
-			return [{length: dense.slice(0).length}];
+			return [{length: dense.slice(0)}];
 		}, function () {
 			var result = [],
 					i;
@@ -162,6 +162,7 @@
 		
 		jOB.benchmark("Array manipulation",
 			"push / pop",
+			"a[a.length]=",
 			"shift / unshift",
 			"splice @ end",
 			"splice @ start",
@@ -173,6 +174,13 @@
 					i;
 			for (i = 0; i < length; i++) {
 				result.push({num: i});
+			}
+			return result;
+		}, function () {
+			var result = [],
+					i;
+			for (i = 0; i < length; i++) {
+				result[result.length] = {num: i};
 			}
 			return result;
 		}, function () {
@@ -212,7 +220,9 @@
 				result.pop();
 			}
 			return result;
-		}, function () {
+		},
+		null,
+		function () {
 			var result = dense.concat([]),
 					i;
 			for (i = 0; i < length; i++) {
@@ -250,7 +260,7 @@
 			"custom comparer",
 			"native w/ pre-process");
 		
-		jOB.test("Randomized array", function () {
+		jOB.test("Randomized array of strings, native comparer", function () {
 			var result = strings_rnd.concat([]),
 					i;
 			result.sort();
@@ -275,7 +285,7 @@
 		}, {lengthonly: true});
 		
 		
-		jOB.test("Already sorted array", function () {
+		jOB.test("Already sorted array of strings, native comparer", function () {
 			var result = strings.concat([]),
 					i;
 			result.sort();
@@ -296,7 +306,7 @@
 				result.push(tmp[i].toString());
 			}
 			result.sort();
-			return result;
+			return result;			
 		}, {lengthonly: true});
 	}(jQuery, jOB));
 	</script>
